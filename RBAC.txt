@@ -1,0 +1,73 @@
+RBAC (Role,ClusterRole,RoleBinding,ClusterBinding)
+
+Role-Based Access Control (RBAC) in Kubernetes
+Role-Based Access Control (RBAC) is a mechanism in Kubernetes for regulating access to resources based on the roles of individual users or groups. RBAC allows you to define permissions and assign them to users, groups, or service accounts.
+
+Key Concepts
+Role
+Defines permissions within a specific namespace. A Role cannot grant access to cluster-wide resources.
+
+ClusterRole
+Similar to a Role but can grant permissions across the entire cluster or to cluster-wide resources.
+
+RoleBinding
+Associates a Role with a user, group, or service account within a namespace.
+
+ClusterRoleBinding
+Associates a ClusterRole with a user, group, or service account across the entire cluster.
+
+# Define a Role
+vim role.yml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: example-namespace
+  name: pod-reader
+rules:
+  - apiGroups: [""]  # "" means the core API group
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]  # Read-only permissions
+
+# Bind the Role to a user or service account
+vim rolebinding.yml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-reader-binding
+  namespace: example-namespace
+subjects:
+  - kind: User
+    name: jane.doe@example.com  # User to bind this Role to
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+
+
+# Define a ClusterRole
+vim clusterrole.yml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-admin-role
+rules:
+  - apiGroups: ["*"]  # Grants access to all API groups
+    resources: ["*"]  # Grants access to all resources
+    verbs: ["*"]      # Grants all permissions (CRUD)
+
+
+# Bind the ClusterRole to a user
+vim clusterrolebinding.yml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-admin-binding
+subjects:
+  - kind: User
+    name: admin@example.com  # User to bind this ClusterRole to
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin-role
+  apiGroup: rbac.authorization.k8s.io
